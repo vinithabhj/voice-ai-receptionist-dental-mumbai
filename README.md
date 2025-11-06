@@ -34,7 +34,6 @@ Built entirely using AI tools for the Purple Focus AI Labs assignment.
 - Answers dental treatment queries  
 - Books appointments with follow-up questions  
 - Google Calendar integration  
-- Multi-clinic routing (Bandra / Andheri / Ghatkopar / Thane)  
 - Sends confirmation via Telegram (text + voice)  
 - Email confirmation with precautions  
 - Cancel and reschedule support  
@@ -45,10 +44,9 @@ Built entirely using AI tools for the Purple Focus AI Labs assignment.
 ## Workflow Summary
 1. User sends a voice message on Telegram  
 2. n8n downloads the audio and transcribes it using Whisper  
-3. GPT-4o extracts intent and required fields (clinic, date, time, treatment)  
+3. GPT-4o extracts intent and required fields (date, time, treatment)  
 4. If booking:
-   - Resolves date/time in IST  
-   - Routes clinic to correct Google Calendar  
+   - Resolves date/time in IST   
    - Creates the event  
 5. AI replies back via voice (OpenAI TTS), text (Telegram), and email (Gmail OAuth)  
 6. For treatment questions, the AI gives safe, friendly answers  
