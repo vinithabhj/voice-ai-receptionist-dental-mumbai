@@ -15,6 +15,13 @@ Built entirely using AI tools for the Purple Focus AI Labs assignment.
 
 ## Screenshots
 
+Screenshot (319).png
+
+Screenshot (320).png
+
+WhatsApp Image 2025-11-06 at 13.26.45_b36b3baa.jpg
+
+WhatsApp Image 2025-11-06 at 13.31.43_068f8d88.jpg
 
 ---
 
