@@ -15,7 +15,7 @@ Built entirely using AI tools for the Purple Focus AI Labs assignment.
 
 ## Screenshots
 
-Screenshot (319).png
+[Screenshot (319).png](https://github.com/vinithabhj/voice-ai-receptionist-dental-mumbai/blob/2c501e984866cb724e4b12797081497c2bcaa4d7/Screenshot%20(319).png)
 
 Screenshot (320).png
 
