@@ -1,0 +1,931 @@
+{
+  "name": "Voice Receptionist - Mumbai",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -9648,
+        3904
+      ],
+      "id": "74e5e402-1862-4d26-985c-1cfcbf43de86",
+      "name": "Telegram Trigger",
+      "webhookId": "a5a5943d-83b1-4839-bf8e-a07c316a1c59",
+      "credentials": {
+        "telegramApi": {
+          "id": "W0yISoqydeFzKz54",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/file/bot8453828419:AAGlJBa7-O9E_VTjrtBsNb7LCndpbIqaznE/{{ $json[\"result\"][\"file_path\"] }}\n",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "filedata"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -9200,
+        3904
+      ],
+      "id": "99954295-2e30-4382-979d-54339430f1f1",
+      "name": "Download Telegram File"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot8453828419:AAGlJBa7-O9E_VTjrtBsNb7LCndpbIqaznE/getFile?file_id={{ $json[\"message\"]?.voice?.file_id || $json[\"message\"]?.audio?.file_id }}\n\n\n\n",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -9424,
+        3904
+      ],
+      "id": "b9b0c8fb-9331-4a6a-babd-0f882b0d0fd0",
+      "name": "Get Telegram FilePath"
+    },
+    {
+      "parameters": {
+        "jsCode": "// If Download node stored file in item.binary.data\nconst item = {};\nitem.binary = {\n  audio: $node[\"Download Telegram File\"].binary[\"filedata\"]\n};\nreturn [item];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8976,
+        3904
+      ],
+      "id": "232a9dc6-62e8-4901-b7d1-f3e4c7a69461",
+      "name": "PrepareAudioBinary"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "dfd3a9c8-1362-4a5e-bdab-b74f30bb2e7d",
+              "leftValue": "={{ $node[\"Clean JSON Output\"].json[\"needsClarification\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -7728,
+        4000
+      ],
+      "id": "34652604-dbc0-49e2-a703-8318c49050cb",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "=I need more information to book your appointment. Please provide:\n\n{{ $node[\"Clean JSON Output\"].json[\"missingFields\"] && $node[\"Clean JSON Output\"].json[\"missingFields\"].length > 0 ? $node[\"Clean JSON Output\"].json[\"missingFields\"].map(f => \"- \" + f.charAt(0).toUpperCase() + f.slice(1)).join(\"\\n\") : \"- Complete appointment details\" }}\n\nExample: \"Book dental appointment for tomorrow at 6 PM, my name is John, email john@example.com, phone 9876543210\"",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -7504,
+        4096
+      ],
+      "id": "14a665b1-980f-4432-8414-d10ac1113fea",
+      "name": "Reply Ask Clear",
+      "webhookId": "adab5d5a-1349-4057-9ed0-6778e6282f4c",
+      "credentials": {
+        "telegramApi": {
+          "id": "W0yISoqydeFzKz54",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e054ffc4-34a9-4a01-b781-cc37db8155a9",
+              "leftValue": "={{ $node[\"Get availability\"].json[\"available\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -7280,
+        3904
+      ],
+      "id": "06b565d7-4121-4cc6-b28d-fa364f9785ff",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "kvinitha1603@gmail.com",
+          "mode": "list",
+          "cachedResultName": "kvinitha1603@gmail.com"
+        },
+        "timeMin": "={{ $node[\"Clean JSON Output\"].json[\"start\"] }}",
+        "timeMax": "={{ $node[\"Clean JSON Output\"].json[\"end\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -7504,
+        3904
+      ],
+      "id": "52d04ad0-7b85-4a49-b4a5-dba07fa4b5e5",
+      "name": "Get availability",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "pRJAcW2dD0mYW0k3",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "kvinitha1603@gmail.com",
+          "mode": "list",
+          "cachedResultName": "kvinitha1603@gmail.com"
+        },
+        "start": "={{ $node[\"Clean JSON Output\"].json[\"start\"] }}",
+        "end": "={{ $node[\"Clean JSON Output\"].json[\"end\"] }}",
+        "useDefaultReminders": false,
+        "additionalFields": {
+          "description": "=Phone: {{ $node[\"Clean JSON Output\"].json[\"phone\"] || \"not provided\" }}\nTranscript: {{ $node[\"OpenAI-style\"].json[\"text\"] }}",
+          "summary": "={{ $node[\"Clean JSON Output\"].json[\"service\"] || \"Dental appointment\" }} — {{ $node[\"Clean JSON Output\"].json[\"name\"] || $node[\"Telegram Trigger\"].json[\"message\"][\"from\"][\"first_name\"] }}"
+        },
+        "remindersUi": {
+          "remindersValues": [
+            {
+              "method": "popup",
+              "minutes": 30
+            },
+            {
+              "method": "popup",
+              "minutes": 1440
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        -7056,
+        3808
+      ],
+      "id": "33dcff49-90b0-4476-8d1d-29e01011c724",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "pRJAcW2dD0mYW0k3",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "=✅ Appointment confirmed for {{ $node[\"Clean JSON Output\"].json[\"service\"] || 'unspecified' }}.\nBooked for: {{ $node[\"Clean JSON Output\"].json[\"name\"] || 'Unknown' }}.\nWhen: {{ $node[\"Clean JSON Output\"].json[\"start\"] ? (new Date($node[\"Clean JSON Output\"].json[\"start\"]).toLocaleString('en-IN', {timeZone:'Asia/Kolkata', day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})) : 'time unspecified' }}.\n\nIf you want to cancel, reply \"cancel\".",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -6384,
+        3904
+      ],
+      "id": "a4bca234-83a8-4d68-a468-828ffc6aff7b",
+      "name": "Send a text message",
+      "webhookId": "48cee0bb-952a-4d2f-82d9-53df2a03a380",
+      "credentials": {
+        "telegramApi": {
+          "id": "W0yISoqydeFzKz54",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node[\"Telegram Trigger\"].json[\"message\"][\"chat\"][\"id\"] }}",
+        "text": "=❌ That slot ({{ $moment($node[\"Clean JSON Output\"].json[\"start\"]).tz(\"Asia/Kolkata\").format(\"YYYY-MM-DD HH:mm\") }}) is already taken. Please suggest another date/time.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -7056,
+        4000
+      ],
+      "id": "97f727fe-289d-4c05-a181-2bfa7b23fdc6",
+      "name": "Send a text message1",
+      "webhookId": "992f13df-59f4-4207-a533-7801bd2c14a9",
+      "credentials": {
+        "telegramApi": {
+          "id": "W0yISoqydeFzKz54",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/audio/transcriptions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "audio"
+            },
+            {
+              "name": "model",
+              "value": "whisper-1"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -8752,
+        3904
+      ],
+      "id": "3435ed22-2a32-494a-816b-c76c94b33919",
+      "name": "OpenAI-style",
+      "credentials": {
+        "openAiApi": {
+          "id": "8QcECDLpc6ketI6a",
+          "name": "OpenAi account"
+        },
+        "httpHeaderAuth": {
+          "id": "6HbKo60bcKvgAYjb",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a JSON extractor for appointment booking. Only return a single JSON object, nothing else."
+            },
+            {
+              "content": "=CurrentDate: {{ new Date().toLocaleDateString('en-CA', {timeZone: 'Asia/Kolkata'}) }}\nCurrentTime: {{ new Date().toLocaleTimeString('en-GB', {timeZone: 'Asia/Kolkata', hour12: false}) }}\n\nTranscript: \"{{ $node['OpenAI-style'].json['text'] }}\"\n\nInstructions:\n- Detect intent: book_appointment OR treatment_query. For treatment_query, set needsClarification=false, start/end=null, and extract the question field. For book_appointment, follow existing logic.\n- Resolve natural-language dates/times relative to the CurrentDate and CurrentTime above (Asia/Kolkata timezone).\n- Output EXACT ISO datetimes in Asia/Kolkata, e.g. \"2025-01-05T18:00:00+05:30\".\n- If only a date is present, assume 09:00 local time. If only time present with \"tomorrow\" etc., resolve relative properly.\n- Extract all fields: service, name, phone, email, date/time\n- Output JSON with keys: intent, service, name, phone, email, date_text, start, end, needsClarification, missingFields, question (for treatment_query)\n- If ANY required field is missing (service, name, email, or date/time), set needsClarification=true and list missing fields in missingFields array\n- If you cannot determine a start or date unambiguously, set needsClarification=true and start/end=null\n\nExample outputs:\n{\"intent\":\"book_appointment\",\"service\":\"dental\",\"name\":\"Vini\",\"phone\":\"9876543210\",\"email\":\"vini@example.com\",\"date_text\":\"tomorrow at 6 pm\",\"start\":\"2025-01-06T18:00:00+05:30\",\"end\":\"2025-01-06T18:30:00+05:30\",\"needsClarification\":false,\"missingFields\":[]}\n{\"intent\":\"book_appointment\",\"service\":null,\"name\":\"John\",\"phone\":null,\"email\":null,\"date_text\":\"tomorrow\",\"start\":null,\"end\":null,\"needsClarification\":true,\"missingFields\":[\"service\",\"email\",\"time\"]}\n{\"intent\":\"treatment_query\",\"question\":\"What should I do for tooth pain?\",\"service\":null,\"name\":null,\"phone\":null,\"email\":null,\"date_text\":null,\"start\":null,\"end\":null,\"needsClarification\":false,\"missingFields\":[]}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        -8528,
+        3904
+      ],
+      "id": "6bebdf89-fad3-4937-a577-0bec45b44ffc",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "8QcECDLpc6ketI6a",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $node[\"Message a model\"].json[\"output\"]?.[0]?.content?.[0]?.text || \"\"; const cleaned = (raw + \"\").replace(/^```json\\s*/i, \"\").replace(/^```/, \"\").replace(/```$/, \"\").trim(); try { const parsed = JSON.parse(cleaned); return [{ json: parsed }]; } catch (err) { return [{ json: { error: \"parse_failed\", raw, details: err.message } }]; }"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8176,
+        3904
+      ],
+      "id": "14320731-5d1c-4fe9-a124-ab550030fd20",
+      "name": "Clean JSON Output"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $node['Clean JSON Output'].json['email'] }}",
+        "subject": "=Appointment Confirmation - {{ $node[\"Clean JSON Output\"].json[\"service\"] || \"Medical Appointment\" }}",
+        "message": "=<h2>Appointment Confirmed</h2>\n\n<p>Dear {{ $node[\"Clean JSON Output\"].json[\"name\"] }},</p>\n\n<p>Your appointment has been successfully confirmed.</p>\n\n<h3>Appointment Details:</h3>\n<ul>\n<li><strong>Service:</strong> {{ $node[\"Clean JSON Output\"].json[\"service\"] }}</li>\n<li><strong>Date & Time:</strong> {{ new Date($node[\"Clean JSON Output\"].json[\"start\"]).toLocaleString(\"en-IN\", {timeZone:\"Asia/Kolkata\", dateStyle:\"full\", timeStyle:\"short\"}) }}</li>\n<li><strong>Duration:</strong> 30 minutes</li>\n<li><strong>Phone:</strong> {{ $node[\"Clean JSON Output\"].json[\"phone\"] || \"Not provided\" }}</li>\n</ul>\n\n<h3>Important Precautions & Instructions:</h3>\n<p>{{ $node[\"Generate Precautions1\"].json[\"choices\"][0][\"message\"][\"content\"] }}</p>\n\n<p>If you need to cancel or reschedule, please contact us as soon as possible.</p>\n\n<p>Best regards,<br>Mumbai Medical Center</p>",
+        "options": {}
+      },
+      "id": "086d7fe8-8289-405e-a8ba-43290388edf7",
+      "name": "Send Email Confirmation",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -6608,
+        3728
+      ],
+      "webhookId": "4460d4b2-5c76-4ba7-a9b0-83a67ead961d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "JM7Zblv4FwJ8vqSq",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Generate a brief list of 3-5 important precautions and instructions for a patient who has an appointment for {{ $(\"Clean JSON Output\").item.json[\"service\"] }}. Keep it concise, professional, and helpful. Format as a simple paragraph.\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "e4d3f81b-31c5-45d4-8138-a87059771d37",
+      "name": "Generate Precautions1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -6832,
+        3728
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "8QcECDLpc6ketI6a",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $('Clean JSON Output').item.json.intent }}",
+              "rightValue": "treatment_query",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ac2bf925-abfd-409e-9cb2-f9064dfd3659",
+      "name": "Check Intent",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -7952,
+        3904
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o-mini\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a helpful dental assistant. Answer treatment-related questions clearly and professionally. Keep responses concise (2-3 paragraphs). Always recommend consulting a dentist for personalized advice.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $('Clean JSON Output').item.json['question'] }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "1f621f84-b09c-454c-94b3-f1d91623e697",
+      "name": "Answer Treatment Query",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -7728,
+        3536
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "8QcECDLpc6ketI6a",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $node['Telegram Trigger'].json['message']['chat']['id'] }}",
+        "text": "={{ $node['Answer Treatment Query'].json['choices'][0]['message']['content'] }}\n\nIf you'd like to book an appointment, just send me a voice message with the details!",
+        "additionalFields": {}
+      },
+      "id": "d933f313-a85a-4393-95a7-e5d5377669cc",
+      "name": "Send Treatment Answer",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -7504,
+        3536
+      ],
+      "webhookId": "95d3996e-2936-477d-bf4a-17d8266b80a1",
+      "credentials": {
+        "telegramApi": {
+          "id": "W0yISoqydeFzKz54",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build speech text from appointment confirmation details\nconst cleanData = $('Clean JSON Output').item.json;\n\nconst service = cleanData.service || 'your appointment';\nconst name = cleanData.name || 'there';\nconst startTime = cleanData.start;\n\nlet formattedDateTime = 'the scheduled time';\nif (startTime) {\n  try {\n    const date = new Date(startTime);\n    formattedDateTime = date.toLocaleString('en-IN', {\n      timeZone: 'Asia/Kolkata',\n      dateStyle: 'full',\n      timeStyle: 'short'\n    });\n  } catch (err) {\n    formattedDateTime = startTime;\n  }\n}\n\nconst speechText = `Your appointment has been confirmed, ${name}. Your ${service} appointment is scheduled for ${formattedDateTime}. We look forward to seeing you!`;\n\nreturn [{ json: { speechText } }];"
+      },
+      "id": "710156a0-7854-4ff5-8c3b-90135b30fb85",
+      "name": "Build Confirmation Speech",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6384,
+        3680
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build speech text from treatment answer\nconst treatmentAnswer = $('Answer Treatment Query').item.json['choices'][0]['message']['content'];\n\nconst speechText = `${treatmentAnswer}\n\nIf you'd like to book an appointment, just send me a voice message with the details like your name, preferred date and time, contact information, and the service you need.`;\n\nreturn [{\n  json: {\n    speechText: speechText\n  }\n}];"
+      },
+      "id": "d0c2987b-fcb9-4720-99ff-1e9af75161e1",
+      "name": "Build Treatment Speech",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7280,
+        3536
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/audio/speech",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"tts-1\",\n  \"voice\": \"nova\",\n  \"input\": \"{{ $json.speechText }}\",\n  \"response_format\": \"opus\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "audio"
+            }
+          }
+        }
+      },
+      "id": "4735cb8e-6b3d-4679-a77a-bef735aa1567",
+      "name": "OpenAI TTS Confirmation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -6160,
+        3680
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "8QcECDLpc6ketI6a",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/audio/speech",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"tts-1\",\n  \"voice\": \"nova\",\n  \"input\": \"{{ $json.speechText }}\",\n  \"response_format\": \"opus\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "audio"
+            }
+          }
+        }
+      },
+      "id": "e8db477e-c14f-48c3-8882-0d04368128f2",
+      "name": "OpenAI TTS Treatment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -7056,
+        3536
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "8QcECDLpc6ketI6a",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8453828419:AAGlJBa7-O9E_VTjrtBsNb7LCndpbIqaznE/sendVoice",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "voice",
+              "inputDataFieldName": "audio"
+            },
+            {
+              "name": "chat_id",
+              "value": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b7f5ef48-a712-4357-814e-bd90825531e0",
+      "name": "Send Voice Confirmation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -5936,
+        3680
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8453828419:AAGlJBa7-O9E_VTjrtBsNb7LCndpbIqaznE/sendVoice",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "voice",
+              "inputDataFieldName": "audio"
+            },
+            {
+              "name": "chat_id",
+              "value": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c456faf2-ec01-4423-b3ca-bab7f0e3550f",
+      "name": "Send Voice Treatment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -6832,
+        3536
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Telegram FilePath",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Telegram FilePath": {
+      "main": [
+        [
+          {
+            "node": "Download Telegram File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Telegram File": {
+      "main": [
+        [
+          {
+            "node": "PrepareAudioBinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PrepareAudioBinary": {
+      "main": [
+        [
+          {
+            "node": "OpenAI-style",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get availability",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply Ask Clear",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get availability": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Precautions1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI-style": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Clean JSON Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email Confirmation": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build Confirmation Speech",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Precautions1": {
+      "main": [
+        [
+          {
+            "node": "Send Email Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean JSON Output": {
+      "main": [
+        [
+          {
+            "node": "Check Intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Intent": {
+      "main": [
+        [
+          {
+            "node": "Answer Treatment Query",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer Treatment Query": {
+      "main": [
+        [
+          {
+            "node": "Send Treatment Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Treatment Answer": {
+      "main": [
+        [
+          {
+            "node": "Build Treatment Speech",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Confirmation Speech": {
+      "main": [
+        [
+          {
+            "node": "OpenAI TTS Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Treatment Speech": {
+      "main": [
+        [
+          {
+            "node": "OpenAI TTS Treatment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI TTS Confirmation": {
+      "main": [
+        [
+          {
+            "node": "Send Voice Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI TTS Treatment": {
+      "main": [
+        [
+          {
+            "node": "Send Voice Treatment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "750fa8b7-702c-4ec3-8570-d70451041b43",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "04248d6b45142d564ce5b4e1a172ca4ee0d020a3d88b05812c12310e9d89aee7"
+  },
+  "id": "OCgW4wM6q0zvIobV",
+  "tags": []
+}
