@@ -9,7 +9,7 @@ Built entirely using AI tools for the Purple Focus AI Labs assignment.
 ---
 
 ## Demo Video
-(Upload demo.mp4 to this repo and paste the link here.)
+[(Upload demo.mp4 to this repo and paste the link here.)](https://drive.google.com/file/d/1L-AT01pOdoOXvVvRKJL_Zlx1N9plZmCj/view?usp=sharing)
 
 ---
 
